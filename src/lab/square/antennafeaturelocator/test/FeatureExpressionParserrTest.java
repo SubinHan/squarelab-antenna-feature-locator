@@ -72,6 +72,19 @@ public class FeatureExpressionParserrTest {
 	}
 	
 	@Test
+	public void testWeired() {
+		Map<String, Boolean> featureSet = new HashMap<String, Boolean>();
+		
+		featureSet.put("CallButtons", true);
+		featureSet.put("DirectedCall", true);		
+		assertTrue(FeatureExpressionParser.evaluate("((((((CallButtons))&(DirectedCall)))))", featureSet));
+		
+		featureSet.put("CallButtons", true);
+		featureSet.put("DirectedCall", false);	
+		assertFalse(FeatureExpressionParser.evaluate("((((((CallButtons))&(DirectedCall)))))", featureSet));
+	}
+	
+	@Test
 	public void testComplex() {
 		Map<String, Boolean> featureSet = new HashMap<String, Boolean>();
 		
