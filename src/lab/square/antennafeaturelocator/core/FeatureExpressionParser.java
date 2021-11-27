@@ -1,8 +1,14 @@
 package lab.square.antennafeaturelocator.core;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+
+import lab.square.antennafeaturelocator.model.AndNode;
+import lab.square.antennafeaturelocator.model.ExpressionNode;
+import lab.square.antennafeaturelocator.model.FeatureNode;
+import lab.square.antennafeaturelocator.model.NotNode;
+import lab.square.antennafeaturelocator.model.OrNode;
 
 public class FeatureExpressionParser {
 
@@ -20,9 +26,9 @@ public class FeatureExpressionParser {
 	}
 
 	private Stack<String> stringToStack(String featureExpression) {
-		
-		List<String> tokens = tokenize(featureExpression);
-		
+
+		List<String> tokens = FeatureExpressionTokenizer.tokenize(featureExpression);
+
 		for (String token : tokens) {
 			System.out.println(token);
 		}
@@ -38,52 +44,93 @@ public class FeatureExpressionParser {
 				toReturn = feature;
 			else
 				toReturn = "(" + toReturn + ")&(" + feature + ")";
-		} 
+		}
 
 		return toReturn;
 	}
-	
-	private List<String> tokenize(String featureExpression) {
-		List<String> tokens = new ArrayList<String>();
-		StringBuilder sb = new StringBuilder();
 
-		for (int i = 0; i < featureExpression.length(); i++) {
-			char c = featureExpression.charAt(i);
-			switch (c) {
-			case ' ':
-				if (sb.length() == 0)
-					continue;
-				sb.append(c);
-				break;
+	public static ExpressionNode parse(String[] tokens) throws Exception {
+		return parseExp(tokens, new WrapInt(0));
+	}
 
-			case '(':
-			case ')':
-				if (sb.length() > 0) {
-					tokens.add(sb.toString());
-					sb.setLength(0);
-				}
-				break;
+	private static ExpressionNode parseExp(String[] tokens, WrapInt index) throws Exception {
 
-			case '&':
-			case '|':
-				if(sb.length() > 0) {
-					tokens.add(sb.toString().trim());
-					sb.setLength(0);
-				}
-				tokens.add(c + "");
-				break;
-
-			default:
-				sb.append(c);
-				break;
-			}
+		ExpressionNode leftExp = parseSubExp(tokens, index);
+		if (index.value >= tokens.length) {
+			return leftExp;
 		}
-		
-		return tokens;
+
+		String token = tokens[index.value];
+		if (token.equals("&")) {
+			index.value++;
+			ExpressionNode rightExp = parseExp(tokens, index);
+			return new AndNode(leftExp, rightExp);
+		} else if (token.equals("|")) {
+			index.value++;
+			ExpressionNode rightExp = parseExp(tokens, index);
+			return new OrNode(leftExp, rightExp);
+		} else if (token.equals("!")) {
+			return new NotNode(leftExp);
+		} else if (token.equals(")")) {
+			return leftExp;
+		} else {
+			throw new Exception("Expected '&', '|' or '!'");
+		}
 	}
 
-	public static void main(String[] args) {
-		new FeatureExpressionParser("(CallButtons)&(DirectedCall)&Sabbath|Replace)");
+	public static boolean evaluate(String expression, Map<String, Boolean> featureSet) {
+		ExpressionNode root;
+		boolean result = false;
+		List<String> tokens = FeatureExpressionTokenizer.tokenize(expression);
+		String[] stringTokens = new String[tokens.size()];
+		tokens.toArray(stringTokens);
+		try {
+			root = parse(stringTokens);
+			result = evaluate(root, featureSet);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return result;
 	}
 
+	private static boolean evaluate(ExpressionNode node, Map<String, Boolean> featureSet) {
+		if (node.getValue().equals("&")) {
+			return evaluate(node.getLeft(), featureSet) && evaluate(node.getRight(), featureSet);
+		} else if (node.getValue().equals("|")) {
+			return evaluate(node.getLeft(), featureSet) || evaluate(node.getRight(), featureSet);
+		} else if (node.getValue().equals("!")) {
+			return !evaluate(node.getLeft(), featureSet);
+		} else {
+			return featureSet.get(node.getValue());
+		}
+	}
+
+	private static ExpressionNode parseSubExp(String[] tokens, WrapInt index) throws Exception {
+		String token = tokens[index.value];
+		if (token.equals("(")) {
+			index.value++;
+			ExpressionNode node = parseExp(tokens, index);
+			if (!tokens[index.value].equals(")"))
+				throw new Exception("Expected ')'");
+
+			index.value++;
+			return node;
+		} else if (token.equals("!")) {
+			index.value++;
+			ExpressionNode leftExp = parseSubExp(tokens, index);
+			return new NotNode(leftExp);
+		} else {
+			index.value++;
+			return new FeatureNode(token);
+		}
+	}
+
+	private static class WrapInt {
+		int value;
+
+		WrapInt(int value) {
+			this.value = value;
+		}
+	}
 }
