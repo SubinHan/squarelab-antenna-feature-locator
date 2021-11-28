@@ -1,7 +1,9 @@
 package lab.square.antennafeaturelocator.core;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 public class FeatureLocation {
@@ -45,8 +47,9 @@ public class FeatureLocation {
 		this.sources = sources;
 	}
 	public boolean isFeatureLocationOf(String feature) {
-		
-		return false;
+		Map<String, Boolean> featureSet = new HashMap<String, Boolean>();
+		featureSet.put(feature, true);
+		return FeatureExpressionParser.evaluate(this.expressionToString(), featureSet);
 	}
 	public String expressionToString() {
 		String toReturn = "";
