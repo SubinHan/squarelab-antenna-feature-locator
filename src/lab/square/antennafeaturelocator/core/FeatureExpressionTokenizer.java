@@ -5,7 +5,12 @@ import java.util.List;
 
 public class FeatureExpressionTokenizer {
 
-	public static List<String> tokenize(String featureExpression) {
+	public static List<String> tokenize(String featureExpression){
+		String bound = bindPrecedence(featureExpression);
+		return tokenize0(bound);
+	}
+	
+	public static List<String> tokenize0(String featureExpression) {
 		List<String> tokens = new ArrayList<String>();
 		StringBuilder sb = new StringBuilder();
 
@@ -48,6 +53,12 @@ public class FeatureExpressionTokenizer {
 		}
 		
 		return tokens;
+	}
+	
+	private static String bindPrecedence(String expression) {
+		
+		
+		return expression;
 	}
 	
 }
