@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,7 +20,6 @@ public class FeatureLocator {
 		FileReader fileReader = new FileReader(javaSourceFile);
 		LineNumberReader lineReader = new LineNumberReader(fileReader);
 
-		String content = Files.readString(Paths.get(javaSourceFilePath));
 		String line;
 		Stack<String> stackedExpressions = new Stack<String>();
 		while ((line = lineReader.readLine()) != null) {
@@ -31,6 +28,7 @@ public class FeatureLocator {
 			if (line.contains("//#if")) {
 				int startLine = lineReader.getLineNumber();
 				String featureExpression;
+				line = removeSpace(line);
 				featureExpression = line.substring(5);
 
 				System.out.println(featureExpression + startLine);
@@ -76,8 +74,7 @@ public class FeatureLocator {
 	}
 
 	private String removeSpace(String line) {
-		line = line.replace(" ", "");
-		line = line.replace("\t", "");
+		line = line.replaceAll("\\s+", "");
 		return line;
 	}
 
@@ -103,7 +100,7 @@ public class FeatureLocator {
 		}
 	}
 
-	private String getStackedExpression(Stack<LocationInfo> stack) {
+	public String getStackedExpression(Stack<LocationInfo> stack) {
 		String toReturn = "";
 
 		Stack<LocationInfo> reversed = new Stack<LocationInfo>();
@@ -124,14 +121,6 @@ public class FeatureLocator {
 		}
 
 		return toReturn;
-	}
-
-	private String and(String expression1, String expression2) {
-		if (expression1.isBlank())
-			return expression2;
-		if (expression2.isBlank())
-			return expression1;
-		return "(" + expression1 + ")&(" + expression2 + ")";
 	}
 
 }
