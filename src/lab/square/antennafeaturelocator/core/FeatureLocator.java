@@ -78,18 +78,6 @@ public class FeatureLocator {
 		return line;
 	}
 
-	public static void main(String[] args) throws IOException {
-		Collection<FeatureLocation> featureLocations = new FeatureLocator().analyze(
-				"D:\\workspace-featureide\\Elevator-Antenna-v1.2\\src\\de\\ovgu\\featureide\\examples\\elevator\\core\\controller\\Request.java");
-
-		for (FeatureLocation featureLocation : featureLocations) {
-			for(String feature : featureLocation.getFeatureExpressions()) {
-				System.out.println(feature);
-			}
-			System.out.println("line: " + featureLocation.getLineStart() + " ~ " + featureLocation.getLineEnd());
-		}
-	}
-
 	protected class LocationInfo {
 		protected final int startLine;
 		protected final String featureExpression;

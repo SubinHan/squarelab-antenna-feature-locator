@@ -48,6 +48,28 @@ public class FeatureLocation {
 		
 		return false;
 	}
+	public String expressionToString() {
+		String toReturn = "";
+
+		while (!featureExpressions.isEmpty()){
+			String popped = featureExpressions.pop();
+			if(toReturn.isBlank()) {
+				toReturn = popped;
+			}
+			else {
+				toReturn = and(popped, toReturn);
+			}
+		}
+		
+		return toReturn;
+	}
+	private String and(String expression1, String expression2) {
+		if (expression1.isBlank())
+			return expression2;
+		if (expression2.isBlank())
+			return expression1;
+		return "(" + expression1 + ")&(" + expression2 + ")";
+	}
 	
 	
 }
