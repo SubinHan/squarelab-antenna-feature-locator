@@ -88,27 +88,4 @@ public class FeatureLocator {
 		}
 	}
 
-	public String getStackedExpression(Stack<LocationInfo> stack) {
-		String toReturn = "";
-
-		Stack<LocationInfo> reversed = new Stack<LocationInfo>();
-		Iterator<LocationInfo> iter = stack.iterator();
-
-		while (iter.hasNext()) {
-			LocationInfo info = iter.next();
-
-			reversed.push(info);
-		}
-
-		while (!reversed.isEmpty()) {
-			LocationInfo info = reversed.pop();
-			if (toReturn.isBlank())
-				toReturn = info.featureExpression;
-			else
-				toReturn = "(" + info.featureExpression + ")&(" + toReturn + ")";
-		}
-
-		return toReturn;
-	}
-
 }
